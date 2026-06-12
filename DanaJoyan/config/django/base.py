@@ -20,6 +20,8 @@ LOCAL_APPS = [
     "dana.users.apps.UsersConfig",
     "dana.authentication.apps.AuthenticationConfig",
     "dana.consumer.apps.ConsumerConfig" , 
+    "dana.trasnport.apps.TrasnportConfig" , 
+
 ]
 
 THIRD_PARTY_APPS = [

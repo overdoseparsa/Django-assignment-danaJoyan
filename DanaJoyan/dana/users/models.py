@@ -1,3 +1,5 @@
+from importlib import reload
+
 from django.db import models
 
 from dana.common.models import BaseModel
@@ -49,3 +51,34 @@ class UserApp(BaseModel):
         return f"{self.username} ({self.user_id})"
 
 
+class Admin(BaseModel):
+    user = models.OneToOneField(
+        UserApp, on_delete=models.CASCADE, related_name="admin_interface"
+    )
+
+    def save(self, *args, **kwargs):
+        if (
+            self.user.user_interface
+        ):  # TODO use django signall for handel this opreation
+            raise ValueError("User already has an admin interface")
+
+        super().save(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return f"{self.user.username} ({self.user.user_id})"
+
+
+class User(BaseModel):
+    user = models.OneToOneField(
+        UserApp, on_delete=models.CASCADE, related_name="user_interface"
+    )
+
+    def save(self, *args, **kwargs):
+        if (
+            self.user.admin_interface
+        ):  # TODO use django signall for handel this opreation
+            raise ValueError("User already has an admin interface")
+        super().save(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return f"{self.user.username} ({self.user.user_id})"

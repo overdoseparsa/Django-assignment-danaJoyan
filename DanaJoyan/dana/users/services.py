@@ -1,18 +1,18 @@
-from django.db import transaction 
-from .models import BaseUser, Profile
+from django.db import transaction
 
-
-def create_profile(*, user:BaseUser, bio:str | None) -> Profile:
-    return Profile.objects.create(user=user, bio=bio)
-
-def create_user(*, email:str, password:str) -> BaseUser:
-    return BaseUser.objects.create_user(email=email, password=password)
+from .models import Admin, User, UserApp
 
 
 @transaction.atomic
-def register(*, bio:str|None, email:str, password:str) -> BaseUser:
+def create_user(*, user_id: int) -> User:
+    user_app = UserApp.objects.select_for_update().get(user_id=user_id)
 
-    user = create_user(email=email, password=password)
-    create_profile(user=user, bio=bio)
-
+    user, _ = User.objects.get_or_create(user=user_app)
     return user
+
+
+@transaction.atomic
+def create_admin(*, user_id: int) -> Admin:
+    user_app = UserApp.objects.select_for_update().get(user_id=user_id)
+    admin, _ = Admin.objects.get_or_create(user=user_app)
+    return admin

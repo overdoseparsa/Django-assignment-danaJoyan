@@ -1,8 +1,21 @@
 from django.urls import path
-from .apis import ProfileApi, RegisterApi
 
+from .routers import (
+    CreateAdminApiView,
+    CreateUserApiView,
+    UserApiView,
+)
 
 urlpatterns = [
-    path('register/', RegisterApi.as_view(),name="register"),
-    path('profile/', ProfileApi.as_view(),name="profile"),
+    path("users/<int:user_id>/", UserApiView.as_view(), name="get-user"),
+    path(
+        "users/<int:user_id>/create-user/",
+        CreateUserApiView.as_view(),
+        name="create-user",
+    ),
+    path(
+        "users/<int:user_id>/create-admin/",
+        CreateAdminApiView.as_view(),
+        name="create-admin",
+    ),
 ]

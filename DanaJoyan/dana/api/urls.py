@@ -1,5 +1,7 @@
-from django.urls import path, include
+from django.urls import include, path
+
+from dana.users.urls import urlpatterns as user_urlpatterns
 
 urlpatterns = [
-    # path('blog/', include(('dana.blog.urls', 'blog')))
+    path("users/", include(user_urlpatterns)),
 ]
