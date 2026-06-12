@@ -1,74 +1,51 @@
 from django.db import models
+
 from dana.common.models import BaseModel
 
-from django.contrib.auth.models import AbstractBaseUser
-from django.contrib.auth.models import BaseUserManager as BUM
-from django.contrib.auth.models import PermissionsMixin
 
+class UserApp(BaseModel):
+    """
+    hint :
+        that user service is that various layer that manages user data
+        Authentication Service with JWT
+        this model just that refreence to This App service
 
+        that Pyload from Auth Service is {
+        {
 
-class BaseUserManager(BUM):
-    def create_user(self, email, is_active=True, is_admin=False, password=None):
-        if not email:
-            raise ValueError("Users must have an email address")
+            "user_id": user.id,
+            "username": user.username,
+            "user_email": user.email,
+            "user_role": user.role,
+            "token": token,
+        }
+    """
 
-        user = self.model(email=self.normalize_email(email.lower()), is_active=is_active, is_admin=is_admin)
+    class UserRole(models.TextChoices):
+        ADMIN = "ADMIN", "Admin"
+        USER = "USER", "User"
 
-        if password is not None:
-            user.set_password(password)
-        else:
-            user.set_unusable_password()
+    user_id = models.BigIntegerField(unique=True, db_index=True)
 
-        user.full_clean()
-        user.save(using=self._db)
+    username = models.CharField(max_length=30, unique=True, db_index=True)
 
-        return user
+    user_email = models.EmailField(db_index=True)
 
-    def create_superuser(self, email, password=None):
-        user = self.create_user(
-            email=email,
-            is_active=True,
-            is_admin=True,
-            password=password,
-        )
+    role = models.CharField(
+        max_length=10, choices=UserRole.choices, default=UserRole.USER
+    )
 
-        user.is_superuser = True
-        user.save(using=self._db)
+    last_synced_at = models.DateTimeField(auto_now=True)
 
-        return user
+    token_hash = models.CharField(max_length=64, unique=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["user_id"]),
+            models.Index(fields=["username"]),
+        ]
 
-class BaseUser(BaseModel, AbstractBaseUser, PermissionsMixin):
-
-    email = models.EmailField(verbose_name = "email address",
-                              unique=True)
-
-    is_active = models.BooleanField(default=True)
-    is_admin = models.BooleanField(default=False)
-
-    objects = BaseUserManager()
-
-    USERNAME_FIELD = "email"
-
-    def __str__(self):
-        return self.email
-
-    def is_staff(self):
-        return self.is_admin
-
-
-class Profile(models.Model):
-    user = models.OneToOneField(BaseUser, on_delete=models.CASCADE)
-    posts_count = models.PositiveIntegerField(default=0)
-    subscriber_count = models.PositiveIntegerField(default=0)
-    subscription_count = models.PositiveIntegerField(default=0)
-    bio = models.CharField(max_length=1000, null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.user} >> {self.bio}"
-
-
-
-
+    def __str__(self) -> str:
+        return f"{self.username} ({self.user_id})"
 
 
