@@ -1,10 +1,7 @@
-from unittest.loader import VALID_MODULE_NAME
-
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from typing_extensions import ValuesView
 
 from .models import UserApp
 from .selectors import get_user

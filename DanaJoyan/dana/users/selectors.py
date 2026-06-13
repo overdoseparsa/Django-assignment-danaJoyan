@@ -1,4 +1,4 @@
-from .models import Admin, UserApp
+from .models import Admin, User, UserApp
 
 
 def get_user(user_id: int) -> UserApp:
@@ -6,12 +6,16 @@ def get_user(user_id: int) -> UserApp:
 
 
 def get_admin(user_id: int) -> Admin:
-    return UserApp.objects.select_related("admin_interface").get(user__user_id=user_id)
+    return UserApp.objects.select_related("admin_interface").get(user_id=user_id)
 
 
 def get_userapp_with_user(user_id: int) -> UserApp:
     return UserApp.objects.select_related("user").get(user_id=user_id)
 
 
-def get_userapp_with_admin(user_id: int) -> UserApp:
-    return UserApp.objects.select_related("admin").get(user_id=user_id)
+def get_single_admin(user_id: int) -> Admin:
+    return Admin.objects.select_related("user").get(user__user_id=user_id)
+
+
+def get_single_user(user_id: int) -> UserApp:
+    return User.objects.select_related("user").get(user__user_id=user_id)
