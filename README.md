@@ -40,13 +40,15 @@ python manage.py runserver
 ```
 
 
-8: run that consumer```
+8: run that consumer
+```
  python manage.py consume_user_events
 ```
 
 ## Endpoints
 
 ### Companies
+
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/transport/companies/` | List all companies |
@@ -74,9 +76,6 @@ python manage.py runserver
 | POST | `/api/transport/transport/` | Create new trip |
 
 
+## System Architecture
 
-# some System Architecture ...
-
-
-<img src="./desgin.png" style='border-radius:1cm'><img>
-s
+![System Architecture](./desgin.png)
