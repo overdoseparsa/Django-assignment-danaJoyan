@@ -78,4 +78,4 @@ python manage.py runserver
 
 ## System Architecture
 
-![System Architecture](./desgin.png)
+![System Architecture](https://github.com/overdoseparsa/Django-assignment-danaJoyan/blob/main/design.png)
