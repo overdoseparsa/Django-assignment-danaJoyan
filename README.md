@@ -38,3 +38,45 @@ docker compose -f docker-compose.dev.yml up -d
 ```
 python manage.py runserver
 ```
+
+
+8: run that consumer```
+ python manage.py consume_user_events
+```
+
+## Endpoints
+
+### Companies
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/transport/companies/` | List all companies |
+| POST | `/api/transport/companies/` | Create new company |
+| GET | `/api/transport/companies/{id}/` | Get company details |
+| PUT/PATCH | `/api/transport/companies/{id}/` | Update company (author only) |
+| DELETE | `/api/transport/companies/{id}/` | Delete company (author only) |
+
+### Buses
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/transport/buses/` | List all buses |
+| POST | `/api/transport/buses/` | Create new bus |
+
+### Seats
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/transport/seats/` | List all seats |
+| POST | `/api/transport/seats/` | Create new seat |
+
+### Transport (Trips)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/transport/transport/` | List trips (with filters & pagination) |
+| POST | `/api/transport/transport/` | Create new trip |
+
+
+
+# some System Architecture ...
+
+
+<img src="./desgin.png" style='border-radius:1cm'><img>
+s
