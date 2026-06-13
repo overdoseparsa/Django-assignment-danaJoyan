@@ -28,7 +28,6 @@ class Bus(BaseModel):
     name = models.CharField(max_length=100)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="buses")
     count_seats = models.IntegerField()
-س
 
     author = models.ForeignKey(Admin, on_delete=models.CASCADE)
 
