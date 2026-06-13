@@ -45,6 +45,8 @@ class Seat(BaseModel):
         MALE = "male", "Male"
         FEMALE = "female", "Female"
 
+    author = models.ForeignKey(Admin, on_delete=models.CASCADE)
+
     bus = models.ForeignKey(Bus, on_delete=models.CASCADE)
     seat_number = models.IntegerField()
     is_reserved = models.BooleanField(default=False)
