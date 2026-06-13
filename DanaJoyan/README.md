@@ -38,3 +38,5 @@ docker compose -f docker-compose.dev.yml up -d
 ```
 python manage.py runserver
 ```
+
+![System Architecture](./desgin.png)
