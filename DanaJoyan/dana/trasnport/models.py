@@ -20,13 +20,15 @@ class Company(BaseModel):
             models.Index(fields=["name"]),
         ]
 
+    def __str__(self) -> str:
+        return self.name
+
 
 class Bus(BaseModel):
     name = models.CharField(max_length=100)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="buses")
     count_seats = models.IntegerField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+س
 
     author = models.ForeignKey(Admin, on_delete=models.CASCADE)
 
