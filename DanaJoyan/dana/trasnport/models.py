@@ -57,11 +57,10 @@ class Seat(BaseModel):
     def __str__(self) -> str:
         return f"{self.bus.name} - {self.seat_number}"
 
-
 class Transport(BaseModel):
     name = models.CharField(max_length=100)
     bus = models.ForeignKey(Bus, on_delete=models.CASCADE)
-    seat = models.ManyToManyField(Seat)
+    seat = models.ManyToManyField(Seat) 
     author = models.ForeignKey(Admin, on_delete=models.CASCADE)
 
     class Meta:
@@ -72,13 +71,3 @@ class Transport(BaseModel):
     def __str__(self) -> str:
         return self.name
 
-    def save(self, *args, **kwargs):
-        if self.bus.author != self.author:
-            raise ValueError("Bus author must be the same as transport author")
-
-        if self.seat.bus != self.bus:
-            raise ValueError("Seat bus must be the same as transport bus")
-
-        if self.seat.author != self.author:
-            raise ValueError("Seat author must be the same as transport author")
-        super().save(*args, **kwargs)

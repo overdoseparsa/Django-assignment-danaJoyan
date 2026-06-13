@@ -1,9 +1,12 @@
-from re import search
+import django_filters as filters
+from django_filters.rest_framework import DjangoFilterBackend
 
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
+    OpenApiResponse,
     extend_schema,
     extend_schema_view,
 )
@@ -14,8 +17,15 @@ from rest_framework.viewsets import ModelViewSet
 
 from dana.trasnport import admin, permissions
 from dana.trasnport.exceptions import PermissionDenied
-from dana.trasnport.models import Bus, Company, Seat
+from dana.trasnport.models import (
+    Bus,
+    Company,
+    Seat,
+    Transport,
+)
 from dana.users.models import Admin
+
+from .services import create_transport
 
 """
 swagger Compony Create
@@ -325,3 +335,162 @@ class SeatApiviewset(ModelViewSet):
             raise PermissionDenied("You do not have permission to delete this company")
 
         instance.delete()
+
+
+"""
+Trasport Create
+"""
+
+
+class TransportApiview(APIView):
+    class InputSerializer(serializers.Serializer):
+        name = serializers.CharField(max_length=100)
+        bus = serializers.PrimaryKeyRelatedField(queryset=Bus.objects.all())
+        seat = serializers.PrimaryKeyRelatedField(
+            queryset=Seat.objects.all(), many=True
+        )
+
+    class OutputSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Transport
+            fields = "__all__"
+
+    permission_classes = [permissions.ISAdminUser]
+
+    @extend_schema(
+        summary="Create a new transport",
+        description="Create a new transport record. Requires admin authentication.",
+        request=InputSerializer,
+        responses={
+            201: OutputSerializer,
+            400: OpenApiResponse(description="Bad Request - Invalid data"),
+            403: OpenApiResponse(description="Forbidden - Admin access required"),
+        },
+        tags=["Transport create"],
+        parameters=[
+            OpenApiParameter(
+                name="Authorization",
+                location="header",
+                description="Bearer <access_token>",
+                required=True,
+                type=str,
+            )
+        ],
+    )
+    def post(self, request):
+        serializer = self.InputSerializer(data=request.data)
+
+        if serializer.is_valid():
+            try:
+                transport = create_transport(
+                    serializer.validated_data, request.admin_user
+                )
+                output_serializer = self.OutputSerializer(transport)
+                return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+            except ValueError as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        summary="List all transports",
+        description="Get list of all transport records with advanced filtering.",
+        responses={200: OutputSerializer(many=True)},
+        tags=["Transport Retrieval"],
+        parameters=[
+            OpenApiParameter(
+                name="Authorization",
+                location="header",
+                description="Bearer <access_token>",
+                required=True,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="bus",
+                location="query",
+                description="Filter by bus ID",
+                required=False,
+                type=int,
+            ),
+            OpenApiParameter(
+                name="bus_name",
+                location="query",
+                description="Filter by bus name",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="name",
+                location="query",
+                description="Exact name filter",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="search",
+                location="query",
+                description="Search in name (contains)",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="min_seats",
+                location="query",
+                description="Minimum number of seats",
+                required=False,
+                type=int,
+            ),
+            OpenApiParameter(
+                name="max_seats",
+                location="query",
+                description="Maximum number of seats",
+                required=False,
+                type=int,
+            ),
+            OpenApiParameter(
+                name="ordering",
+                location="query",
+                description="Order by: created_at, -created_at, name, -name",
+                required=False,
+                type=str,
+            ),
+        ],
+    )
+    def get(self, request):
+        queryset = Transport.objects.all()
+
+        filter_backend = DjangoFilterBackend()
+        filtered_queryset = filter_backend.filter_queryset(request, queryset, view=self)
+
+        page_number = request.query_params.get("page", 1)
+        page_size = request.query_params.get("page_size", 10)
+
+        try:
+            page_size = int(page_size)
+            if page_size > 100:
+                page_size = 100
+        except ValueError:
+            page_size = 10
+
+        paginator = Paginator(filtered_queryset, page_size)
+
+        try:
+            paginated_queryset = paginator.page(page_number)
+        except PageNotAnInteger:
+            paginated_queryset = paginator.page(1)
+        except EmptyPage:
+            paginated_queryset = paginator.page(paginator.num_pages)
+
+        serializer = self.OutputSerializer(paginated_queryset, many=True)
+
+        return Response(
+            {
+                "count": paginator.count,
+                "total_pages": paginator.num_pages,
+                "current_page": paginated_queryset.number,
+                "page_size": page_size,
+                "next": paginated_queryset.has_next(),
+                "previous": paginated_queryset.has_previous(),
+                "results": serializer.data,
+            }
+        )
